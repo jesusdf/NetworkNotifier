@@ -1,0 +1,9 @@
+Network Notifier
+----------------
+
+The main purpose of this program is to send and receive network notifications in a LAN.
+
+It uses an UDP socket on port 7415 to receive broadcast messages (sent to 224.0.0.1) in an XML format with a SHA-256 hash to guarantee the message integrity.
+
+Python scripts are already tested and working, Android app is currently under development (alpha state).
+
