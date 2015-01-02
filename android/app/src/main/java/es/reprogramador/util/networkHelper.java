@@ -20,6 +20,7 @@ public class networkHelper extends Thread {
     }
 
     private static String MULTICAST_GROUP = "224.0.0.1";
+    private static String MULTICAST_GROUP_V6 = "FF01:0:0:0:0:0:0:1";
     private Context _context = null;
     private protocolType _protocol = protocolType.TCP;
     private int _serverPort = 0;
@@ -73,6 +74,7 @@ public class networkHelper extends Thread {
     public void run() {
         byte[] lMessage = new byte[_packetMaxLength];
         InetAddress group = null;
+        InetAddress groupv6 = null;
         DatagramPacket packet = new DatagramPacket(lMessage, lMessage.length);
         DatagramSocket socket = null;
         MulticastSocket multi = null;
@@ -83,12 +85,14 @@ public class networkHelper extends Thread {
         try {
             if (_useMulticast) {
                 group = InetAddress.getByName(MULTICAST_GROUP);
+                groupv6 = InetAddress.getByAddress(MULTICAST_GROUP_V6);
                 wifi = (WifiManager) _context.getSystemService(Context.WIFI_SERVICE);
                 multicastLock = wifi.createMulticastLock(_lockID);
                 multicastLock.setReferenceCounted(true);
                 multicastLock.acquire();
                 multi = new MulticastSocket(_serverPort);
                 multi.joinGroup(group);
+                multi.joinGroup(groupv6);
                 socket = multi;
             } else {
                 socket = new DatagramSocket(_serverPort);
@@ -103,6 +107,7 @@ public class networkHelper extends Thread {
             }
             if (_useMulticast) {
                 multi.leaveGroup(group);
+                multi.leaveGroup(groupv6);
             }
         } catch (Throwable e) {
             e.printStackTrace();
