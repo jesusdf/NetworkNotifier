@@ -7,3 +7,4 @@ It uses an UDP socket on port 7415 to receive broadcast messages (sent to 224.0.
 
 Python scripts are already tested and working, Android app is currently under development (alpha state).
 
+Published under GPL versión 3 license.

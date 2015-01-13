@@ -1,3 +1,15 @@
+/*
+
+Network Notifier
+
+Copyright (C) 2015 Jesús Diéguez Fernández
+
+This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA or see http://www.gnu.org/licenses/.
+
+*/
+
 package es.reprogramador.networknotifier;
 
 import android.app.Service;
@@ -16,6 +28,7 @@ import es.reprogramador.util.*;
 public class NetworkNotifierService extends Service {
 
     private static final boolean DEBUG = false;
+    private static final boolean LISTEN_ON_MULTICAST = false;
     private static final int MAX_UDP_DATAGRAM_LEN = 1500;
     private static final int UDP_SERVER_PORT = 7415;
     private static final String TAG = "Network Notifier";
@@ -35,7 +48,7 @@ public class NetworkNotifierService extends Service {
             //notifier.showNotification(id, TAG, "Service started.", "http://reprogramador.es");
         }
         if (socket == null) {
-            socket = new networkHelper(this, networkHelper.protocolType.UDP, UDP_SERVER_PORT, UDP_SERVER_PORT, true, MAX_UDP_DATAGRAM_LEN, TAG);
+            socket = new networkHelper(this, networkHelper.protocolType.UDP, UDP_SERVER_PORT, UDP_SERVER_PORT, LISTEN_ON_MULTICAST, MAX_UDP_DATAGRAM_LEN, TAG);
             socket.start();
             socket.addMessageListener(new networkHelper.MessageListener()
             {
