@@ -93,7 +93,11 @@ public class notificationHelper {
         }
 
         NotificationManager notificationManager = (NotificationManager) _context.getSystemService(Context.NOTIFICATION_SERVICE);
-        notificationManager.notify(id, builder.build());
+        if (notificationManager != null) {
+            try {
+                notificationManager.notify(id, builder.build());
+            } catch(Exception ex) { }
+        }
 
     }
 

@@ -17,7 +17,7 @@ import java.security.MessageDigest;
 public class digestHelper {
     private String bytesToHexString(byte[] bytes) {
         // http://stackoverflow.com/questions/332079
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         for (int i = 0; i < bytes.length; i++) {
             String hex = Integer.toHexString(0xFF & bytes[i]);
             if (hex.length() == 1) {
@@ -54,7 +54,7 @@ public class digestHelper {
 
     private String getHash(String digestType, String data) {
         String hash = "";
-        MessageDigest digest=null;
+        MessageDigest digest;
         try {
             digest = MessageDigest.getInstance(digestType);
             digest.update(data.getBytes());

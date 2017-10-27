@@ -23,9 +23,7 @@ public class NetworkNotifier extends Activity {
         super.onCreate(savedInstanceState);
         try {
             Intent s = new Intent(this, NetworkNotifierService.class);
-            if (s != null) {
-                startService(s);
-            }
+            startService(s);
         } catch(Exception e) {
             e.printStackTrace();
         }

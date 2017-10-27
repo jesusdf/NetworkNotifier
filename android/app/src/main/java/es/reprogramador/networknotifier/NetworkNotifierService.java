@@ -28,10 +28,10 @@ import es.reprogramador.util.*;
 public class NetworkNotifierService extends Service {
 
     private static final boolean DEBUG = false;
-    private static final boolean LISTEN_ON_MULTICAST = false;
+    private static final boolean LISTEN_ON_MULTICAST = true;
     private static final int MAX_UDP_DATAGRAM_LEN = 1500;
     private static final int UDP_SERVER_PORT = 7415;
-    private static final String TAG = "Network Notifier";
+    public static final String TAG = "Network Notifier";
     private networkHelper socket = null;
     private notificationHelper notifier = null;
     private int id = 0;
@@ -42,20 +42,21 @@ public class NetworkNotifierService extends Service {
     }
 
     @Override
-    public void onStart(Intent intent, int startId) {
+    public int onStartCommand(Intent intent, int flags, int startId) {
         if (notifier == null) {
             notifier = new notificationHelper(this, R.drawable.icon, BitmapFactory.decodeResource(getResources(), R.drawable.icon));
             //notifier.showNotification(id, TAG, "Service started.", "http://reprogramador.es");
         }
         if (socket == null) {
             socket = new networkHelper(this, networkHelper.protocolType.UDP, UDP_SERVER_PORT, UDP_SERVER_PORT, LISTEN_ON_MULTICAST, MAX_UDP_DATAGRAM_LEN, TAG);
+            socket.keepWiFiOn(getApplicationContext(), true);
             socket.start();
             socket.addMessageListener(new networkHelper.MessageListener()
             {
                 public void onMessageReceived(String message)
                 {
                     messageHelper m = parseXML(message);
-                    if (m.message != "") {
+                    if (!m.message.equals("")) {
                         if (notifier != null) {
                             notifier.showNotification(++id, m.title, m.message, TAG);
                         }
@@ -63,6 +64,7 @@ public class NetworkNotifierService extends Service {
                 }
             });
         }
+        return START_REDELIVER_INTENT;
     }
 
     private class messageHelper {
@@ -73,11 +75,11 @@ public class NetworkNotifierService extends Service {
 
     private messageHelper parseXML(String xml){
 
-        String hash = "";
+        String hash;
 
         messageHelper m = new messageHelper();
         DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder = null;
+        DocumentBuilder builder;
         digestHelper digest = new digestHelper();
         try {
             builder = builderFactory.newDocumentBuilder();
@@ -120,6 +122,7 @@ public class NetworkNotifierService extends Service {
             notifier = null;
         }
         if (socket != null) {
+            socket.keepWiFiOn(getApplicationContext(), false);
             socket.kill();
         }
     }

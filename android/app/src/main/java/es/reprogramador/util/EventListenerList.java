@@ -26,7 +26,6 @@ package es.reprogramador.util;
         import java.io.Serializable;
         import java.lang.reflect.Array;
         import java.util.ArrayList;
-        import java.util.EventListener;
 
 public class EventListenerList implements Serializable {
 
@@ -146,7 +145,7 @@ public class EventListenerList implements Serializable {
         inStream.defaultReadObject();
 
         ArrayList list = new ArrayList();
-        Object markerObject = null;
+        Object markerObject;
         while ((markerObject = inStream.readObject()) != null) {
             list.add(markerObject);
             list.add(inStream.readObject());

@@ -20,7 +20,6 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.MulticastSocket;
 import java.net.InetAddress;
-import java.net.SocketAddress;
 import java.util.Enumeration;
 import java.util.EventListener;
 
@@ -38,10 +37,11 @@ public class networkHelper extends Thread {
     private int _serverPort = 0;
     private int _remotePort = 0;
     private int _packetMaxLength = 1000;
-    private boolean _useMulticast = false;
+    private boolean _useMulticast = true;
     private boolean _keepRunning = true;
     private String _lastMessage = "";
     private String _lockID = "";
+    private static WifiManager.WifiLock wifiLock = null;
     private EventListenerList _messageListenerList = new EventListenerList();
 
     /**
@@ -90,18 +90,22 @@ public class networkHelper extends Thread {
         DatagramPacket packet = new DatagramPacket(lMessage, lMessage.length);
         DatagramSocket socket = null;
         MulticastSocket multi = null;
-        WifiManager wifi = null;
+        WifiManager wifi;
         WifiManager.MulticastLock multicastLock = null;
-        String message = "";
+        String message;
 
         try {
             if (_useMulticast) {
                 group = InetAddress.getByName(MULTICAST_GROUP);
                 groupv6 = InetAddress.getByName(MULTICAST_GROUP_V6);
-                wifi = (WifiManager) _context.getSystemService(Context.WIFI_SERVICE);
-                multicastLock = wifi.createMulticastLock(_lockID);
-                multicastLock.setReferenceCounted(true);
-                multicastLock.acquire();
+                wifi = (WifiManager) _context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+                try {
+                    multicastLock = wifi.createMulticastLock(_lockID);
+                } catch(Exception ex) { }
+                if (multicastLock != null) {
+                    multicastLock.setReferenceCounted(true);
+                    multicastLock.acquire();
+                }
                 multi = new MulticastSocket(_serverPort);
                 multi.joinGroup(group);
                 multi.joinGroup(groupv6);
@@ -112,14 +116,16 @@ public class networkHelper extends Thread {
             while (_keepRunning) {
                 socket.receive(packet);
                 message = new String(lMessage, 0, packet.getLength());
-                if (message != "") {
+                if (!message.equals("")) {
                     _lastMessage = message;
                     fireListeners();
                 }
             }
             if (_useMulticast) {
-                multi.leaveGroup(group);
-                multi.leaveGroup(groupv6);
+                try {
+                    multi.leaveGroup(group);
+                    multi.leaveGroup(groupv6);
+                } catch(Exception ex) { }
             }
         } catch (Throwable e) {
             e.printStackTrace();
@@ -131,7 +137,6 @@ public class networkHelper extends Thread {
 
         if (_useMulticast && (multicastLock != null)) {
             multicastLock.release();
-            multicastLock = null;
         }
 
     }
@@ -161,6 +166,23 @@ public class networkHelper extends Thread {
 
     public String getLastMessage() {
         return _lastMessage;
+    }
+
+    public void keepWiFiOn(Context context, boolean on) {
+        if (wifiLock == null) {
+            WifiManager wm = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+            if (wm != null) {
+                wifiLock = wm.createWifiLock(WifiManager.WIFI_MODE_FULL, es.reprogramador.networknotifier.NetworkNotifierService.TAG);
+                wifiLock.setReferenceCounted(true);
+            }
+        }
+        if (wifiLock != null) {
+            if (on) {
+                wifiLock.acquire();
+            } else if (wifiLock.isHeld()) {
+                wifiLock.release();
+            }
+        }
     }
 
 }
